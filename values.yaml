@@ -1,0 +1,56 @@
+# Label selectors to identify target pods.
+# All key-value pairs are ANDed together.
+# At least one label is strongly recommended to avoid annotating unrelated pods.
+podSelector:
+  labels: {}
+  # Example:
+  # labels:
+  #   app: my-app
+  #   environment: production
+
+# Cron schedule for the annotation updater job.
+# Default: every 30 minutes.
+schedule: "*/30 * * * *"
+
+# Starting cost value for the oldest pod.
+# Subsequent pods receive startCost + (index * costIncrement).
+startCost: 0
+
+# Cost increment between consecutive pods (sorted oldest → newest).
+# Oldest pod: startCost, next: startCost+costIncrement, ...
+# Higher values give more room between pods; lower values are fine for small fleets.
+costIncrement: 100
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  # Defaults to the chart fullname when empty.
+  name: ""
+
+image:
+  repository: bitnami/kubectl
+  pullPolicy: IfNotPresent
+  # Overrides the image tag. Defaults to "latest".
+  tag: "latest"
+
+imagePullSecrets: []
+
+resources:
+  requests:
+    cpu: "10m"
+    memory: "32Mi"
+  limits:
+    cpu: "100m"
+    memory: "64Mi"
+
+successfulJobsHistoryLimit: 1
+failedJobsHistoryLimit: 1
+
+podAnnotations: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

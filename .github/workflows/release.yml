@@ -1,0 +1,66 @@
+name: Release Helm Chart
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Chart.yaml'
+      - 'values.yaml'
+      - 'templates/**'
+      - 'README.md'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Read chart version
+        id: chart
+        run: echo "version=$(helm show chart . | grep '^version:' | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - name: Package chart
+        run: helm package . --destination /tmp/helm-pkg
+
+      # Ensure the gh-pages branch exists. If not, create an orphan branch.
+      - name: Prepare gh-pages branch
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages; then
+            git worktree add /tmp/gh-pages gh-pages
+          else
+            git worktree add --orphan -b gh-pages /tmp/gh-pages
+          fi
+
+      - name: Update Helm repo index
+        run: |
+          REPO_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+
+          cp /tmp/helm-pkg/*.tgz /tmp/gh-pages/
+          cp artifacthub-repo.yml /tmp/gh-pages/
+
+          if [ -f /tmp/gh-pages/index.yaml ]; then
+            helm repo index /tmp/gh-pages/ --url "$REPO_URL" --merge /tmp/gh-pages/index.yaml
+          else
+            helm repo index /tmp/gh-pages/ --url "$REPO_URL"
+          fi
+
+      - name: Commit and push gh-pages
+        run: |
+          cd /tmp/gh-pages
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Release ${{ steps.chart.outputs.version }}"
+          git push origin gh-pages

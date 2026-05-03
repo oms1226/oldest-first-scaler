@@ -1,0 +1,71 @@
+{{- $labelSelector := include "oldest-first-scaler.labelSelector" . -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "oldest-first-scaler.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "oldest-first-scaler.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "oldest-first-scaler.selectorLabels" . | nindent 12 }}
+        spec:
+          serviceAccountName: {{ include "oldest-first-scaler.serviceAccountName" . }}
+          restartPolicy: OnFailure
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: updater
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+                  COST={{ .Values.startCost }}
+                  LABEL_SELECTOR={{ $labelSelector | quote }}
+
+                  # Build optional -l flag; empty string means "no label filter".
+                  LABEL_ARG=()
+                  if [ -n "$LABEL_SELECTOR" ]; then
+                    LABEL_ARG=(-l "$LABEL_SELECTOR")
+                  fi
+
+                  for POD in $(kubectl get pods -n "$NAMESPACE" \
+                    "${LABEL_ARG[@]}" \
+                    --field-selector=status.phase=Running \
+                    --sort-by=.metadata.creationTimestamp \
+                    -o 'jsonpath={.items[*].metadata.name}'); do
+                    kubectl annotate pod "$POD" -n "$NAMESPACE" \
+                      controller.kubernetes.io/pod-deletion-cost="$COST" --overwrite
+                    COST=$((COST + {{ .Values.costIncrement }}))
+                  done
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
