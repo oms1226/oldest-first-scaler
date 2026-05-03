@@ -4,7 +4,7 @@
 #   https://artifacthub.io/control-panel/repositories?modal=add
 #
 # Replace <REPOSITORY_ID> with the UUID shown in your Artifact Hub control panel.
-repositoryID: 69f749a5-61d8-475c-9e2e-d7d455df59ed
+repositoryID: dd6d3511-78a3-49f4-beef-6a647512fdf5
 owners:
   - name: oms1226
     email: oh.myeongseob@sktelecom.com
