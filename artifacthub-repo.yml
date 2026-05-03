@@ -1,0 +1,10 @@
+# This file is used by Artifact Hub to verify ownership of the Helm repository.
+# Place this file at the root of your Helm repository (e.g. the gh-pages branch).
+# The repositoryID is assigned by Artifact Hub after you register the repository at:
+#   https://artifacthub.io/control-panel/repositories?modal=add
+#
+# Replace <REPOSITORY_ID> with the UUID shown in your Artifact Hub control panel.
+repositoryID: <REPOSITORY_ID>
+owners:
+  - name: oms1226
+    email: oh.myeongseob@sktelecom.com
