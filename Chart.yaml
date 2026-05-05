@@ -23,7 +23,7 @@ maintainers:
     email: oms1226@gmail.com
 annotations:
   artifacthub.io/license: Apache-2.0
-  artifacthub.io/category: deployment-lifecycle
+  artifacthub.io/category: integration-delivery
   artifacthub.io/operator: "false"
   artifacthub.io/changes: |
     - kind: added
