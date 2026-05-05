@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   oldest-first-scaler:
   - annotations:
-      artifacthub.io/category: deployment-lifecycle
+      artifacthub.io/category: integration-delivery
       artifacthub.io/changes: |
         - kind: added
           description: Initial release of oldest-first-scaler
@@ -16,12 +16,12 @@ entries:
       artifacthub.io/operator: "false"
     apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-05-03T05:53:03.320289628Z"
+    created: "2026-05-05T08:32:57.458072556Z"
     description: 'Automatically assigns pod-deletion-cost annotations so that the
       oldest pod is always chosen first during scale-in events.  A CronJob periodically
       sorts Running pods by creation timestamp and sets cost=0 on the oldest, cost+N
       on the next, and so on — making Kubernetes naturally evict oldest-first. '
-    digest: 4e686d91f63610d1bb82b719008ca391761261cc2398318ea967f2230fc9c3c0
+    digest: 2860a1acf8085601e4c134c67f904068d6deba50253e3b381c2984092f14be8b
     home: https://github.com/oms1226/oldest-first-scaler
     keywords:
     - kubernetes
@@ -40,4 +40,4 @@ entries:
     urls:
     - https://oms1226.github.io/oldest-first-scaler/oldest-first-scaler-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-03T05:53:03.318564129Z"
+generated: "2026-05-05T08:32:57.455871756Z"
